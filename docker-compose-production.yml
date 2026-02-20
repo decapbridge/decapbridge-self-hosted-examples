@@ -1,0 +1,93 @@
+services:
+  web:
+    image: ghcr.io/decapbridge/decapbridge-web:latest
+    environment:
+      VITE_DECAPBRIDGE_IS_SELFHOSTED: "true"
+      VITE_DECAPBRIDGE_SITE_URL: https://login.mycompany.com
+      VITE_DECAPBRIDGE_API_URL: https://auth.mycompany.com
+      VITE_DECAPBRIDGE_GATEWAY_URL: https://gateway.mycompany.com
+      VITE_DECAPBRIDGE_AUTH_PROVIDERS: "google,microsoft"
+      VITE_DECAPBRIDGE_SITE_NAME: My Company
+      VITE_DECAPBRIDGE_SITE_LOGO: https://mycompany.com/logo.png
+      VITE_DECAPBRIDGE_THEME_COLOR: "#0000ff"
+      VITE_DECAPBRIDGE_THEME_RADIUS: xl
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+  api:
+    image: ghcr.io/decapbridge/decapbridge-api:latest
+    depends_on:
+      - postgres
+    environment:
+      DECAPBRIDGE_LICENSE_KEY: key-xxxxxxxxxxxx
+      KEY: changeme                        # generate with: openssl rand -hex 32
+      SECRET: changeme                     # generate with: openssl rand -hex 32
+      PUBLIC_URL: https://auth.mycompany.com
+      PROJECT_URL: https://login.mycompany.com
+      PROJECT_NAME: My Company
+      PROJECT_LOGO: https://mycompany.com/logo.png # This needs to be publicly accessible at the moment that you start the backend server
+      PROJECT_COLOR: "#0000ff"
+      PASSWORD_RESET_URL_ALLOW_LIST: https://login.mycompany.com/auth/password/reset,https://login.mycompany.com/auth/finalize
+      ACCESS_TOKEN_TTL: 24h
+      REFRESH_TOKEN_TTL: 30d
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: directus
+      DB_USER: postgres
+      DB_PASSWORD: changeme
+      FILES_MAX_UPLOAD_SIZE: 500kb
+      EMAIL_FROM: no-reply@mg.mycompany.com
+      EMAIL_TRANSPORT: mailgun
+      EMAIL_MAILGUN_API_KEY: changeme
+      EMAIL_MAILGUN_DOMAIN: mg.mycompany.com
+      EMAIL_VERIFY_SETUP: "true"
+      AUTH_PROVIDERS: google,microsoft
+      AUTH_GOOGLE_DRIVER: openid
+      AUTH_GOOGLE_CLIENT_ID: changeme
+      AUTH_GOOGLE_CLIENT_SECRET: changeme
+      AUTH_GOOGLE_ISSUER_URL: https://accounts.google.com/.well-known/openid-configuration
+      AUTH_GOOGLE_IDENTIFIER_KEY: email
+      AUTH_GOOGLE_SCOPE: openid profile email
+      AUTH_GOOGLE_ALLOW_PUBLIC_REGISTRATION: "true"
+      AUTH_GOOGLE_REDIRECT_ALLOW_LIST: https://login.mycompany.com
+      AUTH_GOOGLE_SYNC_USER_INFO: "true"
+      AUTH_GOOGLE_LABEL: Google
+      AUTH_GOOGLE_ICON: google
+      AUTH_MICROSOFT_DRIVER: openid
+      AUTH_MICROSOFT_CLIENT_ID: changeme
+      AUTH_MICROSOFT_CLIENT_SECRET: changeme
+      AUTH_MICROSOFT_ISSUER_URL: https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
+      AUTH_MICROSOFT_IDENTIFIER_KEY: email
+      AUTH_MICROSOFT_SCOPE: openid profile email
+      AUTH_MICROSOFT_ALLOW_PUBLIC_REGISTRATION: "true"
+      AUTH_MICROSOFT_REDIRECT_ALLOW_LIST: https://login.mycompany.com
+      AUTH_MICROSOFT_SYNC_USER_INFO: "true"
+      AUTH_MICROSOFT_LABEL: Microsoft
+      AUTH_MICROSOFT_ICON: microsoft
+    volumes:
+      - api_uploads:/app/uploads
+    ports:
+      - "8055:80"
+    restart: unless-stopped
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: directus
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+  gateway:
+    image: ghcr.io/decapbridge/decapbridge-gateway:latest
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    environment:
+      GITGATEWAY_JWT_SECRET: changeme # this needs to match with api secret
+      GITGATEWAY_DB_DRIVER: sqlite3
+      DATABASE_URL: gorm.db
+volumes:
+  postgres_data:
+  api_uploads:

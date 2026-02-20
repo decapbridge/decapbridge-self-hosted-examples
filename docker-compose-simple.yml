@@ -1,0 +1,56 @@
+services:
+  web:
+    image: ghcr.io/decapbridge/decapbridge-web:latest
+    environment:
+      VITE_DECAPBRIDGE_IS_SELFHOSTED: "true"
+      VITE_DECAPBRIDGE_SITE_URL: http://localhost:8080
+      VITE_DECAPBRIDGE_API_URL: http://localhost:8055
+      VITE_DECAPBRIDGE_GATEWAY_URL: http://localhost:8081
+      VITE_DECAPBRIDGE_SITE_NAME: My Company login portal
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+  api:
+    image: ghcr.io/decapbridge/decapbridge-api:latest
+    depends_on:
+      - postgres
+    environment:
+      KEY: changeme
+      SECRET: changeme
+      PUBLIC_URL: http://localhost:8055
+      PROJECT_URL: http://localhost:8080
+      PROJECT_NAME: My Company
+      PASSWORD_RESET_URL_ALLOW_LIST: http://localhost:8080/auth/password/reset,http://localhost:8080/auth/finalize
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: directus
+      DB_USER: postgres
+    volumes:
+      - api_uploads:/app/uploads
+    ports:
+      - "8055:80"
+    restart: unless-stopped
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: directus
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+  gateway:
+    image: ghcr.io/decapbridge/decapbridge-gateway:latest
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    environment:
+      GITGATEWAY_JWT_SECRET: changeme # this needs to match with api secret
+      GITGATEWAY_DB_DRIVER: sqlite3
+      DATABASE_URL: gorm.db
+volumes:
+  postgres_data:
+  api_uploads:
