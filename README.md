@@ -14,14 +14,15 @@ For production (realistic setup):
 
 - A domain name with 3 subdomains pointed to your server
 - A reverse proxy with SSL (Nginx, Traefik, Caddy, etc.)
-- Optional: SMTP server or Mailgun API key, SSO credentials
+- Optional: SMTP server or Mailgun API key (for email notifications, invite links can also be copied from the UI)
+- Optional: SSO credentials (Google, Microsoft)
 
 ## Examples
 
-| Example                                                            | Description                                                          |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| [`docker-compose-simple.yml`](./docker-compose-simple.yml)         | Basic setup: no email, no SSO, should work as-is locally for testing |
-| [`docker-compose-production.yml`](./docker-compose-production.yml) | Full setup: with Mailgun email and Google/Microsoft SSO              |
+| Example                                                            | Description                                                       |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| [`docker-compose-simple.yml`](./docker-compose-simple.yml)         | Minimal setup: no email, no SSO — works as-is locally for testing |
+| [`docker-compose-production.yml`](./docker-compose-production.yml) | Full setup: with Mailgun email and Google/Microsoft SSO           |
 
 ## Getting started
 
