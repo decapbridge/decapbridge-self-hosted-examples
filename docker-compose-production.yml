@@ -2,14 +2,13 @@ services:
   web:
     image: ghcr.io/decapbridge/decapbridge-web:latest
     environment:
-      VITE_DECAPBRIDGE_IS_SELFHOSTED: "true"
       VITE_DECAPBRIDGE_SITE_URL: https://login.mycompany.com
       VITE_DECAPBRIDGE_API_URL: https://auth.mycompany.com
       VITE_DECAPBRIDGE_GATEWAY_URL: https://gateway.mycompany.com
       VITE_DECAPBRIDGE_AUTH_PROVIDERS: "google,microsoft"
       VITE_DECAPBRIDGE_SITE_NAME: My Company
       VITE_DECAPBRIDGE_SITE_LOGO: https://mycompany.com/logo.png
-      VITE_DECAPBRIDGE_THEME_COLOR: "#0000ff"
+      VITE_DECAPBRIDGE_THEME_COLOR: "#222731"
       VITE_DECAPBRIDGE_THEME_RADIUS: xl
     ports:
       - "8080:8080"
@@ -19,23 +18,24 @@ services:
     depends_on:
       - postgres
     environment:
+      PORT: 8055
       DECAPBRIDGE_LICENSE_KEY: key-xxxxxxxxxxxx
-      KEY: changeme                        # generate with: openssl rand -hex 32
-      SECRET: changeme                     # generate with: openssl rand -hex 32
+      KEY: changeme # generate with: openssl rand -hex 32
+      SECRET: changeme # needs to match gateway secret, generate with: openssl rand -hex 32
       PUBLIC_URL: https://auth.mycompany.com
       PROJECT_URL: https://login.mycompany.com
       PROJECT_NAME: My Company
-      PROJECT_LOGO: https://mycompany.com/logo.png # This needs to be publicly accessible at the moment that you start the backend server
-      PROJECT_COLOR: "#0000ff"
+      PROJECT_LOGO: https://mycompany.com/logo.png # This needs to be publicly accessible at the moment that you start the backend server, it will get downloaded and saved.
+      PROJECT_COLOR: "#222731"
       PASSWORD_RESET_URL_ALLOW_LIST: https://login.mycompany.com/auth/password/reset,https://login.mycompany.com/auth/finalize
       ACCESS_TOKEN_TTL: 24h
       REFRESH_TOKEN_TTL: 30d
-      DB_CLIENT: pg
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: directus
       DB_USER: postgres
       DB_PASSWORD: changeme
+      # protip: DB_CONNECTION_STRING=... (instead of DB_...)
       FILES_MAX_UPLOAD_SIZE: 500kb
       EMAIL_FROM: no-reply@mg.mycompany.com
       EMAIL_TRANSPORT: mailgun
@@ -68,7 +68,7 @@ services:
     volumes:
       - api_uploads:/app/uploads
     ports:
-      - "8055:80"
+      - "8055:8055"
     restart: unless-stopped
   postgres:
     image: postgres:16
@@ -86,8 +86,6 @@ services:
     restart: unless-stopped
     environment:
       GITGATEWAY_JWT_SECRET: changeme # this needs to match with api secret
-      GITGATEWAY_DB_DRIVER: sqlite3
-      DATABASE_URL: gorm.db
 volumes:
   postgres_data:
   api_uploads:
